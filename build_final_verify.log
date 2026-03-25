@@ -1,0 +1,46 @@
+
+> nextjs_tailwind_shadcn_ts@0.2.0 build
+> next build && node -e "require('fs').cpSync('.next/static', '.next/standalone/.next/static', {recursive:true}); require('fs').cpSync('public', '.next/standalone/public', {recursive:true, force:true})"
+
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\tanis\package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * C:\Users\tanis\Downloads\workspace-510f6cae-5a6b-4500-ac13-3a8052b3def1 (1)\package-lock.json
+
+▲ Next.js 16.2.1 (Turbopack)
+- Environments: .env
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 14.3s
+  Skipping validation of types
+  Finished TypeScript config validation in 10ms ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/14) ...
+  Generating static pages using 11 workers (3/14) 
+  Generating static pages using 11 workers (6/14) 
+  Generating static pages using 11 workers (10/14) 
+✓ Generating static pages using 11 workers (14/14) in 888ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api
+├ ƒ /api/activity/list
+├ ƒ /api/auth/login
+├ ƒ /api/auth/register
+├ ƒ /api/auth/verify
+├ ƒ /api/cloud/simulate-failure
+├ ƒ /api/cloud/status
+├ ƒ /api/files/download
+├ ƒ /api/files/download/[id]
+├ ƒ /api/files/list
+├ ƒ /api/files/stats
+└ ƒ /api/files/upload
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
