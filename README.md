@@ -36,10 +36,10 @@ npm install
 ```
 
 ### 3. Environment Variables
-Copy the supplied `.env.example` into a `.env` file and populate it. You **must** provide functional credentials for:
+You **must** provide functional credentials for:
 - Database URL (SQLite path is fine)
-- JWT Secret
-- Google Drive Service Account JSON Details & Target Folder ID
+- NextAuth JWT Secret
+- Google Drive OAuth 2.0 Credentials (Client ID, Secret, Refresh Token) & Target Folder ID
 - Dropbox Short-Lived User Access Token
 - Cloudinary API Key, Secret, and Cloud Name
 

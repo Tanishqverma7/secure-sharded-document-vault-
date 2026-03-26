@@ -3,7 +3,7 @@ import { getUser } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { encrypt } from '@/lib/encryption';
 import { createShards } from '@/lib/sharding';
-import { uploadShard, CLOUD_PROVIDERS } from '@/lib/cloud';
+import { uploadShard, deleteShard, CLOUD_PROVIDERS } from '@/lib/cloud';
 
 export async function POST(request: NextRequest) {
   try {
@@ -61,6 +61,16 @@ export async function POST(request: NextRequest) {
     const uploadDuration = (Date.now() - uploadStart) / 1000;
     
     if (Object.keys(cloudIds).length < 2) {
+      // Garbage collection: Delete any orphaned shards that uploaded successfully to avoid wasted space
+      for (const id of Object.values(cloudIds)) {
+        try {
+          await deleteShard(id);
+          console.log(`[Upload] Cleaned up orphaned shard: ${id}`);
+        } catch (e) {
+          console.error(`[Upload] Failed to clean up orphaned shard ${id}:`, e);
+        }
+      }
+      
       return NextResponse.json(
         { success: false, error: 'Not enough shards uploaded' },
         { status: 500 }

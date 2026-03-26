@@ -13,23 +13,19 @@ export const CLOUD_PROVIDERS = {
 
 // Configure clients lazily to prevent errors if variables are not set during build/import
 function getDrive() {
-  let privateKey = process.env.GOOGLE_DRIVE_PRIVATE_KEY || '';
-  
-  // Bulletproof PEM reconstructor to bypass any .env escaping issues
-  const match = privateKey.match(/-----BEGIN PRIVATE KEY-----([^]*?)-----END PRIVATE KEY-----/);
-  if (match) {
-    const base64 = match[1].replace(/[^a-zA-Z0-9+/=]/g, '');
-    const chunks = base64.match(/.{1,64}/g) || [];
-    privateKey = `-----BEGIN PRIVATE KEY-----\n${chunks.join('\n')}\n-----END PRIVATE KEY-----\n`;
-  }
-  
+  const oauth2Client = new google.auth.OAuth2(
+    process.env.GOOGLE_DRIVE_CLIENT_ID,
+    process.env.GOOGLE_DRIVE_CLIENT_SECRET,
+    'https://developers.google.com/oauthplayground'
+  );
+
+  oauth2Client.setCredentials({
+    refresh_token: process.env.GOOGLE_DRIVE_REFRESH_TOKEN
+  });
+
   return google.drive({
     version: 'v3',
-    auth: new google.auth.JWT({
-      email: process.env.GOOGLE_DRIVE_CLIENT_EMAIL,
-      key: privateKey,
-      scopes: ['https://www.googleapis.com/auth/drive.file']
-    }),
+    auth: oauth2Client,
   });
 }
 
@@ -78,11 +74,11 @@ export async function uploadShard(provider: string, data: Buffer): Promise<strin
     }
     case 'dropbox': {
       const dbx = getDropbox();
-      const res = await dbx.filesUpload({
+      await dbx.filesUpload({
         path: `/vault/${idStr}`,
         contents: data,
       });
-      id = res.result.id;
+      id = idStr;
       break;
     }
     case 'cloudinary': {
@@ -129,10 +125,16 @@ export async function downloadShard(id: string): Promise<Buffer> {
       break;
     }
     case 'dropbox': {
-      const dbx = getDropbox();
-      const res = await dbx.filesDownload({ path: realId.startsWith('/') ? realId : `/vault/${realId}` });
-      // In Node environment fileBinary contains the buffer
-      data = (res.result as any).fileBinary;
+      const dropPath = realId.startsWith('id:') || realId.startsWith('/') ? realId : `/vault/${realId}`;
+      const res = await fetch('https://content.dropboxapi.com/2/files/download', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.DROPBOX_ACCESS_TOKEN}`,
+          'Dropbox-API-Arg': JSON.stringify({ path: dropPath })
+        }
+      });
+      if (!res.ok) throw new Error(`Dropbox download failed: ${res.statusText} (${res.status})`);
+      data = Buffer.from(await res.arrayBuffer());
       break;
     }
     case 'cloudinary': {
@@ -168,7 +170,8 @@ export async function deleteShard(id: string): Promise<boolean> {
       }
       case 'dropbox': {
         const dbx = getDropbox();
-        await dbx.filesDeleteV2({ path: realId.startsWith('/') ? realId : `/vault/${realId}` });
+        const dropPath = realId.startsWith('id:') || realId.startsWith('/') ? realId : `/vault/${realId}`;
+        await dbx.filesDeleteV2({ path: dropPath });
         break;
       }
       case 'cloudinary': {
@@ -182,7 +185,7 @@ export async function deleteShard(id: string): Promise<boolean> {
     console.log(`[Cloud] Deleted: ${id}`);
     return true;
   } catch (error) {
-    console.error(`[Cloud] Complete delete failed for ${id}:`, error);
+    console.error(`[Cloud] Complete delete failed for ${id}:`, error && typeof error === 'object' && 'message' in error ? error.message : String(error));
     return false;
   }
 }
