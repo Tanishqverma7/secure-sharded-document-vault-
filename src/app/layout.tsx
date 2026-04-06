@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: "Secure Sharded Document Vault",
   description: "Zero-knowledge, multi-cloud storage platform with RAID-5 style fault tolerance and self-healing capabilities.",
   keywords: ["encryption", "AES-256", "RAID-5", "multi-cloud", "zero-knowledge", "secure storage"],
-  authors: [{ name: "Secure Vault Team" }],
+  authors: [{ name: "Tanishq(CC_8)" }],
   icons: {
     icon: "/logo.svg",
   },
